@@ -63,9 +63,14 @@
 Faire tourner un vrai cluster Kafka/Hadoop/Spark n'est pas réaliste pour un dépôt de démonstration.
 Le code du repository reproduit donc fidèlement les **contrats d'interface** de chaque brique :
 
-- `src/ingestion/kafka_producer.py` / `kafka_consumer.py` utilisent `kafka-python` si un broker
-  est disponible (variable d'env `KAFKA_BOOTSTRAP_SERVERS`), sinon basculent sur une file locale
+- `src/ingestion/kafka_bus.py` / `kafka_producer.py` utilisent `kafka-python` si un broker est
+  disponible (variable d'env `KAFKA_BOOTSTRAP_SERVERS`), sinon basculent sur une file locale
   (`data/kafka_sim/*.jsonl`) — même interface, donc le code de production ne change pas.
+  La lecture suit une sémantique **peek / commit** : `peek()` lit les messages sans les
+  supprimer, `commit()` ne les retire qu'une fois le traitement en aval terminé avec succès
+  (bug corrigé : une version antérieure supprimait les messages dès la lecture, avant même de
+  savoir si la consolidation Spark allait réussir — un échec en cours de route perdait alors
+  définitivement les données, sans possibilité de rejeu).
 - `src/spark/spark_job.py` utilise PySpark s'il est installé, sinon un fallback pandas strictement
   équivalent (même transformations, même schéma de sortie) écrit dans `data/hdfs_sim/` (parquet).
 - `docker-compose.yml` (fourni) permet de lancer un vrai Kafka + Zookeeper en local pour aller plus
