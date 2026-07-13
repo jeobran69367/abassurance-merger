@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+htmlcov/
+data/kafka_sim/
+data/hdfs_sim/
+src/ml/artifacts/
+.venv/
+venv/
+*.egg-info/
+.env

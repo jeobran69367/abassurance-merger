@@ -1,0 +1,20 @@
+pandas
+scikit-learn
+numpy
+joblib
+fastapi
+uvicorn[standard]
+pydantic
+python-jose[cryptography]
+bcrypt
+python-multipart
+pytest
+pytest-cov
+httpx
+faker
+flake8
+
+# Optionnel : uniquement nécessaire si un vrai broker Kafka / cluster Spark est disponible.
+# kafka-python
+# pyspark
+# pyarrow
