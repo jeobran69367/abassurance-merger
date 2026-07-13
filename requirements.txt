@@ -13,8 +13,8 @@ pytest-cov
 httpx
 faker
 flake8
+pyarrow  # requis par le fallback pandas.to_parquet() dans src/spark/spark_job.py
 
 # Optionnel : uniquement nécessaire si un vrai broker Kafka / cluster Spark est disponible.
 # kafka-python
 # pyspark
-# pyarrow
