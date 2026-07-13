@@ -43,14 +43,30 @@ class KafkaBus:
         with path.open("a", encoding="utf-8") as f:
             f.write(json.dumps(message, default=str) + "\n")
 
-    def consume(self, topic: str) -> Iterator[dict[str, Any]]:
-        """Consomme (et vide) le topic. En mode réel, remplacer par un KafkaConsumer avec
-        gestion d'offsets/groupes de consommateurs (voir README pour la version production)."""
+    def peek(self, topic: str) -> list[dict[str, Any]]:
+        """Lit les messages du topic SANS les supprimer (équivalent d'une lecture Kafka
+        avant commit d'offset). Le fichier n'est retiré de la file qu'après un appel
+        explicite à `commit()`, une fois le traitement en aval terminé avec succès.
+        """
         path = LOCAL_QUEUE_DIR / f"{topic}.jsonl"
         if not path.exists():
-            return
+            return []
         lines = path.read_text(encoding="utf-8").splitlines()
-        path.unlink()
-        for line in lines:
-            if line.strip():
-                yield json.loads(line)
+        return [json.loads(line) for line in lines if line.strip()]
+
+    def commit(self, topic: str) -> None:
+        """Marque le topic comme traité (équivalent d'un commit d'offset Kafka) : les
+        messages ne sont retirés de la file locale qu'à cet instant, jamais avant."""
+        path = LOCAL_QUEUE_DIR / f"{topic}.jsonl"
+        path.unlink(missing_ok=True)
+
+    def consume(self, topic: str) -> Iterator[dict[str, Any]]:
+        """Ancienne API, conservée pour compatibilité : lit ET commit immédiatement.
+
+        À éviter dans du nouveau code — préférer `peek()` puis `commit()` explicite après
+        traitement réussi, pour ne jamais perdre de message si un job plante en cours de
+        route (voir docs/architecture.md, bug corrigé du 2026-07 : le job Spark supprimait
+        les messages avant même de savoir si la consolidation avait réussi)."""
+        messages = self.peek(topic)
+        self.commit(topic)
+        yield from messages

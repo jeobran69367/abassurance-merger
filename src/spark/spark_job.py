@@ -32,8 +32,8 @@ def _try_pyspark():
 
 def run_consolidation() -> dict:
     bus = KafkaBus()
-    ab_rows = list(bus.consume("clients.abassurance"))
-    ap_rows = list(bus.consume("clients.assureplus"))
+    ab_rows = bus.peek("clients.abassurance")
+    ap_rows = bus.peek("clients.assureplus")
 
     mapped_ab, quarantine_ab = map_batch(ab_rows, map_ab_client)
     mapped_ap, quarantine_ap = map_batch(ap_rows, map_ap_user)
@@ -53,6 +53,12 @@ def run_consolidation() -> dict:
 
         df = pd.DataFrame(all_clients)
         df.to_parquet(LAKE_DIR / "clients.parquet", index=False)
+
+    # Le commit n'intervient qu'ici, une fois l'écriture dans le data lake confirmée : si
+    # une exception survient plus haut (ex. dépendance manquante, erreur d'écriture), les
+    # topics ne sont jamais vidés et les messages restent disponibles pour un rejeu.
+    bus.commit("clients.abassurance")
+    bus.commit("clients.assureplus")
 
     return {
         "clients_consolides": len(all_clients),
