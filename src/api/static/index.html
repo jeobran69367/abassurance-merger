@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AbAssurance — Prédiction du risque client</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="page">
+
+    <header class="topbar" id="topbar" hidden>
+      <div class="topbar-brand">
+        <span class="mark">A</span>
+        <span>AbAssurance</span>
+      </div>
+      <div class="topbar-user">
+        <span id="user-role-badge" class="badge"></span>
+        <button id="logout-btn" class="btn btn-ghost">Se déconnecter</button>
+      </div>
+    </header>
+
+    <main class="main">
+
+      <!-- Écran de connexion -->
+      <section id="login-screen" class="screen">
+        <div class="card auth-card">
+          <div class="mark mark-lg">A</div>
+          <h1>AbAssurance</h1>
+          <p class="subtitle">Prédiction du risque client — fusion AbAssurance / AssurePlus</p>
+
+          <form id="login-form">
+            <label for="username">Identifiant</label>
+            <input type="text" id="username" name="username" autocomplete="username" required />
+
+            <label for="password">Mot de passe</label>
+            <input type="password" id="password" name="password" autocomplete="current-password" required />
+
+            <button type="submit" class="btn btn-primary btn-block">Se connecter</button>
+          </form>
+
+          <p id="login-error" class="error-text" hidden></p>
+
+          <p class="hint">Comptes de démonstration : <code>admin</code> / <code>Admin@2026</code>
+            ou <code>user</code> / <code>User@2026</code></p>
+        </div>
+      </section>
+
+      <!-- Tableau de bord -->
+      <section id="dashboard-screen" class="screen" hidden>
+        <div class="grid">
+
+          <div class="card">
+            <h2>Évaluer le risque d'un client</h2>
+            <p class="subtitle">Renseigne les caractéristiques du contrat pour obtenir une prédiction.</p>
+
+            <form id="predict-form">
+              <div class="field-grid">
+                <div class="field">
+                  <label for="anciennete">Ancienneté du contrat (mois)</label>
+                  <input type="number" id="anciennete" min="0" value="6" required />
+                </div>
+                <div class="field">
+                  <label for="sinistres">Sinistres (12 derniers mois)</label>
+                  <input type="number" id="sinistres" min="0" value="3" required />
+                </div>
+                <div class="field">
+                  <label for="montant">Montant total des sinistres (€)</label>
+                  <input type="number" id="montant" min="0" value="4200" required />
+                </div>
+                <div class="field">
+                  <label for="retards">Paiements en retard</label>
+                  <input type="number" id="retards" min="0" value="2" required />
+                </div>
+                <div class="field">
+                  <label for="age">Âge du client</label>
+                  <input type="number" id="age" min="18" max="120" value="27" required />
+                </div>
+                <div class="field">
+                  <label for="prime">Prime annuelle (€)</label>
+                  <input type="number" id="prime" min="0" value="580" required />
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-block" id="predict-btn">
+                Prédire le risque
+              </button>
+            </form>
+
+            <p id="predict-error" class="error-text" hidden></p>
+
+            <div id="result-card" class="result-card" hidden>
+              <p class="result-label">Résultat de la prédiction</p>
+              <div class="result-row">
+                <span id="risk-badge" class="badge badge-lg"></span>
+                <span id="risk-proba" class="result-proba"></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" id="admin-card" hidden>
+            <h2>Informations du modèle</h2>
+            <p class="subtitle">Réservé au rôle admin.</p>
+            <button id="model-info-btn" class="btn btn-secondary btn-block">Charger les informations</button>
+            <div id="model-info-content" class="model-info"></div>
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="footer">
+      Bloc 3 — Bachelor Concepteur Développeur en IA · Démonstration non contractuelle
+    </footer>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
