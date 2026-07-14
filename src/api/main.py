@@ -7,13 +7,17 @@ Identifiants : voir README.md (admin/Admin@2026, user/User@2026)
 """
 from __future__ import annotations
 
+import logging
+
 import joblib
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel, Field
 
 from src.auth.auth import authenticate_user, create_access_token, get_current_user, require_role
-from src.ml.train_model import FEATURE_COLUMNS, MODEL_DIR
+from src.ml.train_model import FEATURE_COLUMNS, MODEL_DIR, train
+
+logger = logging.getLogger("uvicorn.error")
 
 app = FastAPI(
     title="AbAssurance — API de prédiction du risque client",
@@ -22,6 +26,22 @@ app = FastAPI(
 )
 
 _model = None
+
+
+@app.on_event("startup")
+def train_model_if_missing() -> None:
+    """Entraîne automatiquement le modèle au démarrage s'il est absent.
+
+    Nécessaire sur les plateformes de déploiement à disque éphémère (ex. Render, Railway) :
+    chaque redémarrage repart d'un système de fichiers vierge, donc l'artefact
+    `risk_model.joblib` d'une exécution précédente n'existe plus. En local, si le modèle a déjà
+    été entraîné via `python -m src.ml.train_model`, il est réutilisé tel quel (pas de
+    ré-entraînement inutile à chaque redémarrage du serveur)."""
+    model_path = MODEL_DIR / "risk_model.joblib"
+    if not model_path.exists():
+        logger.info("Aucun modèle trouvé (%s) : entraînement automatique au démarrage…", model_path)
+        train()
+        logger.info("Modèle entraîné et sauvegardé dans %s", model_path)
 
 
 def get_model():
