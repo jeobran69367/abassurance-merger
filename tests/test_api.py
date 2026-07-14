@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 
 from src.api.main import app
-from src.ml.train_model import train
+from src.ml.train_model import MODEL_DIR, train
 
 client = TestClient(app)
 
@@ -14,6 +14,19 @@ def _get_token(username: str, password: str) -> str:
 
 def test_health_endpoint():
     assert client.get("/health").json() == {"status": "ok"}
+
+
+def test_startup_trains_model_automatically_if_missing():
+    """Nécessaire pour les déploiements à disque éphémère (Render, Railway) : si l'artefact
+    n'existe pas au démarrage du serveur, l'API doit s'auto-entraîner plutôt que de planter."""
+    model_path = MODEL_DIR / "risk_model.joblib"
+    model_path.unlink(missing_ok=True)
+    assert not model_path.exists()
+
+    with TestClient(app):  # déclenche l'event "startup"
+        pass
+
+    assert model_path.exists()
 
 
 def test_login_rejects_wrong_password():
