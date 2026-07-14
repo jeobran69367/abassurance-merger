@@ -8,10 +8,13 @@ Identifiants : voir README.md (admin/Admin@2026, user/User@2026)
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 
 import joblib
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.responses import FileResponse
 from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from src.auth.auth import authenticate_user, create_access_token, get_current_user, require_role
@@ -19,13 +22,25 @@ from src.ml.train_model import FEATURE_COLUMNS, MODEL_DIR, train
 
 logger = logging.getLogger("uvicorn.error")
 
+STATIC_DIR = Path(__file__).resolve().parent / "static"
+
 app = FastAPI(
     title="AbAssurance — API de prédiction du risque client",
     description="Fusion AbAssurance / AssurePlus — Bloc 3 IA",
     version="1.0.0",
 )
 
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
 _model = None
+
+
+@app.get("/", include_in_schema=False)
+def frontend_home():
+    """Sert la petite application web de démonstration (login + formulaire de prédiction).
+
+    La documentation interactive de l'API reste disponible séparément sur /docs."""
+    return FileResponse(STATIC_DIR / "index.html")
 
 
 @app.on_event("startup")

@@ -16,6 +16,22 @@ def test_health_endpoint():
     assert client.get("/health").json() == {"status": "ok"}
 
 
+def test_frontend_served_at_root():
+    """US 6.2 -- la petite application web de démo doit être servie à la racine,
+    séparément de la documentation Swagger (/docs)."""
+    response = client.get("/")
+    assert response.status_code == 200
+    assert "text/html" in response.headers["content-type"]
+    assert "AbAssurance" in response.text
+
+
+def test_static_assets_are_served():
+    css_response = client.get("/static/style.css")
+    js_response = client.get("/static/app.js")
+    assert css_response.status_code == 200
+    assert js_response.status_code == 200
+
+
 def test_startup_trains_model_automatically_if_missing():
     """Nécessaire pour les déploiements à disque éphémère (Render, Railway) : si l'artefact
     n'existe pas au démarrage du serveur, l'API doit s'auto-entraîner plutôt que de planter."""
