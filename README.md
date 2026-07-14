@@ -66,7 +66,10 @@ numéro de téléphone invalide pour démontrer la règle de validation — voir
 uvicorn src.api.main:app --reload
 ```
 
-Puis ouvrir http://127.0.0.1:8000/docs (Swagger). Authentifie-toi via `POST /token` avec un des
+Puis ouvrir **http://127.0.0.1:8000** pour la petite application web de démo (écran de
+connexion + formulaire de prédiction du risque), ou http://127.0.0.1:8000/docs pour la
+documentation Swagger interactive. Authentifie-toi via `POST /token` (ou directement dans
+l'écran de connexion de l'application) avec un des
 comptes ci-dessous, clique sur "Authorize" en haut à droite avec le token reçu, puis teste
 `POST /predict/risk-client`.
 
