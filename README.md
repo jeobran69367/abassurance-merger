@@ -136,6 +136,35 @@ pip install -r requirements.txt
 **Solution :** vérifier que le venv est bien actif — le prompt du terminal doit afficher `(venv)`.
 Si besoin : `source venv/bin/activate` avant de relancer `pip install`.
 
+### `uvicorn --reload` plante avec `ImportError: numpy.core.multiarray failed to import` (conflit Anaconda/venv)
+
+**Symptôme :** le prompt affiche `(venv) (base)` en même temps (Anaconda est actif en plus du
+venv du projet). `python -m src.ml.train_model` fonctionne très bien, mais `uvicorn --reload`
+plante avec des erreurs NumPy/pandas incohérentes.
+
+**Cause :** le rechargement automatique d'uvicorn (`--reload`) relance le serveur dans un
+sous-processus. Sur macOS, quand Anaconda (`base`) est actif en plus du venv, ce sous-processus
+va chercher les paquets dans l'installation Anaconda (`/opt/anaconda3/...`) au lieu du venv du
+projet, provoquant un conflit entre les versions de NumPy/pandas installées dans les deux
+environnements.
+
+**Solution immédiate :** lancer l'API sans rechargement automatique :
+```bash
+uvicorn src.api.main:app
+```
+
+**Solution durable :** sortir complètement d'Anaconda avant de travailler sur le projet, puis
+recréer le venv à partir d'un Python "propre" :
+```bash
+conda deactivate
+conda deactivate   # parfois nécessaire deux fois selon la configuration du shell
+rm -rf venv
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+Le prompt ne doit plus afficher `(base)`, seulement `(venv)`.
+
 ---
 
 ## Convention de nommage des branches
